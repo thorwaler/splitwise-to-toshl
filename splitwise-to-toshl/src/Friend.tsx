@@ -1,9 +1,9 @@
 import {
   Box,
   Button,
-  Chip,
   Container,
   FormControlLabel,
+  Modal,
   Switch,
   Typography,
 } from "@mui/material";
@@ -11,99 +11,103 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useUserAccounts } from "./hooks/useAccounts";
 
-export type SplitwiseFriend = {
-  id: string;
-  first_name: string;
-  last_name: string;
-  balance: {
-    amount: number;
-    currency_code: string;
-  }[];
+import { Expense, ExpenseElement } from "./ExpenseElement";
+import { SplitwiseFriend } from "./Friends";
+import CloseIcon from "@mui/icons-material/Close";
+
+const modalStyle = {
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  width: "80%",
+  maxWidth: 800,
+  bgcolor: "background.paper",
+  borderRadius: 2,
+  boxShadow: 24,
+  p: 4,
 };
 
-type Expense = {
-  category: string;
-  description: string;
-  currency: string;
-  total_amount: number;
-  date: string;
-  share_amount: number;
-  friends: string[];
-  involved: boolean;
-};
-
-const ExpenseElement = ({ expense }: { expense: Expense }) => {
+function AddExpense({
+  expense,
+  closeModal,
+}: {
+  expense: Expense | null;
+  closeModal: () => void;
+}) {
+  if (expense === null) {
+    return <>Error: No expense selected</>;
+  }
   return (
-    <Box
-      sx={{
-        display: "flex",
-        flexDirection: "row",
-        alignItems: "center",
-        borderBottom: "1px solid #ccc",
-        padding: "1rem",
-      }}
-    >
-      <Box
-        sx={{
-          flexGrow: 1,
-        }}
-      >
-        <Typography variant="h6" component="h3" align="left">
-          {expense.description}
+    <Box sx={modalStyle}>
+      <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+        <Typography variant="overline">
+          <strong>Add Expense</strong>
         </Typography>
-        <Typography variant="body2" component="h3" align="left">
-          {expense.date}
-        </Typography>
+        <Button onClick={closeModal} size="large">
+          <CloseIcon />
+        </Button>
       </Box>
-
       <Box
         sx={{
           display: "flex",
-          flexDirection: "column",
+          flexDirection: "row",
           alignItems: "flex-end",
-        }}
-      >
-        <Typography variant="body1" color="" align="right">
-          Total: {expense.total_amount} {expense.currency}
-        </Typography>
-        {expense.involved ? (
+          justifyContent: "space-between",
+        }}>
+        <Box
+          sx={{
+            flexGrow: 1,
+          }}>
+          <Typography variant="h4" component="h1" align="left">
+            {expense.description}
+          </Typography>
+
+          <Typography variant="body2" component="h3" align="left">
+            {expense.date}
+          </Typography>
+        </Box>
+
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "flex-end",
+          }}>
+          <Typography variant="body1" color="" align="right">
+            Total: {expense.total_amount} {expense.currency}
+          </Typography>
           <Typography variant="body1" color="primary" align="right">
             My Share: {expense.share_amount} {expense.currency}
           </Typography>
-        ) : (
-          <Chip label="Not involved" />
-        )}
+        </Box>
       </Box>
-      {expense.involved && (
-        <Button
-          variant="contained"
-          color="primary"
-          sx={{
-            marginLeft: "1rem",
-          }}
-        >
-          Add
-        </Button>
-      )}
     </Box>
   );
-};
+}
 
 export function Friend() {
   const { friendId } = useParams();
   const [friend, setFriend] = useState<SplitwiseFriend | null>(null);
   const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
   const [page, setPage] = useState(0);
-  const [count, setCount] = useState(20);
+  const count = 30;
   const [showInvolved, setShowInvolved] = useState(true);
 
-  const { userAccounts, accountsSet } = useUserAccounts();
+  const { userAccounts, accountsSet, loadUserAccounts } = useUserAccounts();
   const navigate = useNavigate();
   useEffect(() => {
-    if (!accountsSet) {
-      navigate("/");
+    async function checkUserAccount() {
+      if (!accountsSet) {
+        if (!(await loadUserAccounts())) {
+          navigate("/");
+        }
+      }
+      return true;
     }
-  }, [accountsSet, navigate]);
+    checkUserAccount();
+  }, [accountsSet, loadUserAccounts, navigate]);
 
   useEffect(() => {
     if (friendId === undefined) {
@@ -189,8 +193,7 @@ export function Friend() {
                 style={{
                   color: "grey",
                   marginLeft: "0.5rem",
-                }}
-              >
+                }}>
                 (
                 {friend.balance
                   .map(
@@ -208,8 +211,7 @@ export function Friend() {
               display: "flex",
               flexDirection: "row",
               justifyContent: "space-between",
-            }}
-          >
+            }}>
             <Typography variant="h6" component="h2" gutterBottom>
               Page: {page + 1}
             </Typography>
@@ -224,15 +226,29 @@ export function Friend() {
                   defaultChecked
                 />
               }
-              label="Only show expenses I'm involved in"
+              label="Only show expenses I have a share in"
             />
           </Box>
 
           {showInvolved
             ? expenses
                 .filter((e) => e.involved)
-                .map((expense) => <ExpenseElement expense={expense} />)
-            : expenses.map((expense) => <ExpenseElement expense={expense} />)}
+                .map((expense) => (
+                  <ExpenseElement
+                    expense={expense}
+                    selectExpense={() => {
+                      setSelectedExpense(expense);
+                    }}
+                  />
+                ))
+            : expenses.map((expense) => (
+                <ExpenseElement
+                  expense={expense}
+                  selectExpense={() => {
+                    setSelectedExpense(expense);
+                  }}
+                />
+              ))}
 
           <Box
             sx={{
@@ -240,16 +256,14 @@ export function Friend() {
               display: "flex",
               flexDirection: "row",
               justifyContent: "space-between",
-            }}
-          >
+            }}>
             <Button
               variant="contained"
               color="primary"
               onClick={() => {
                 setPage(page - 1);
               }}
-              disabled={page === 0}
-            >
+              disabled={page === 0}>
               Previous
             </Button>
             <Button
@@ -257,8 +271,7 @@ export function Friend() {
               color="primary"
               onClick={() => {
                 setPage(page + 1);
-              }}
-            >
+              }}>
               Next
             </Button>
           </Box>
@@ -268,6 +281,14 @@ export function Friend() {
           Loading...
         </Typography>
       )}
+      <Modal open={!!selectedExpense}>
+        <AddExpense
+          expense={selectedExpense}
+          closeModal={() => {
+            setSelectedExpense(null);
+          }}
+        />
+      </Modal>
     </Container>
   );
 }

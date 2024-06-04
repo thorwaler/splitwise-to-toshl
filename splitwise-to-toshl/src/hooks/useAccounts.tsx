@@ -22,7 +22,7 @@ type UserAccountsContextType = {
   userAccounts: UserAccounts;
   accountsSet: boolean;
   loadingAccounts: boolean;
-  loadUserAccounts: () => void;
+  loadUserAccounts: () => Promise<boolean>;
 };
 
 // Create the context
@@ -50,7 +50,7 @@ export const UserAccountsProvider: React.FC<{ children: React.ReactNode }> = ({
     return userAccounts.splitwise.id !== 0 && userAccounts.toshl.id !== 0;
   }, [userAccounts]);
 
-  const loadUserAccounts = useCallback(async () => {
+  const loadUserAccounts = useCallback(async (): Promise<boolean> => {
     const splitwiseAPIKey = localStorage.getItem("splitwiseAPIKey");
     const toshlAPIKey = localStorage.getItem("toshlAPIKey");
 
@@ -74,6 +74,7 @@ export const UserAccountsProvider: React.FC<{ children: React.ReactNode }> = ({
         }));
       } catch (e) {
         console.error(e);
+        return false;
       }
 
       try {
@@ -94,9 +95,47 @@ export const UserAccountsProvider: React.FC<{ children: React.ReactNode }> = ({
         }));
       } catch (e) {
         console.error(e);
+        return false;
       }
+
+      console.log("Getting categories and tags");
+      // Get catrgories from Toshl
+      try {
+        const data = await fetch(`/api/toshl/categories?per_page=500`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${toshlAPIKey}`,
+          },
+        });
+        const toshlCategories = await data.json();
+
+        console.log(toshlCategories);
+      } catch (e) {
+        console.error(e);
+        return false;
+      }
+
+      try {
+        const data = await fetch(`/api/toshl/tags?per_page=500`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${toshlAPIKey}`,
+          },
+        });
+        const toshlTags = await data.json();
+
+        console.log(toshlTags);
+      } catch (e) {
+        console.error(e);
+        return false;
+      }
+
+      // Get tags from Toshl
     }
     setLoadingAccounts(false);
+    return true;
   }, []);
 
   const value = {

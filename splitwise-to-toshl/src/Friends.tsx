@@ -25,12 +25,18 @@ const FriendRow = styled(Box)`
 export function Friends() {
   const [friends, setFriends] = useState<SplitwiseFriend[]>([]);
   const navigate = useNavigate();
-  const { accountsSet } = useUserAccounts();
+  const { accountsSet, loadUserAccounts } = useUserAccounts();
   useEffect(() => {
-    if (!accountsSet) {
-      navigate("/");
+    async function checkUserAccount() {
+      if (!accountsSet) {
+        if (!(await loadUserAccounts())) {
+          navigate("/");
+        }
+      }
+      return true;
     }
-  }, [accountsSet, navigate]);
+    checkUserAccount();
+  }, [accountsSet, loadUserAccounts, navigate]);
 
   useEffect(() => {
     fetch("/api/splitwise/v3.0/get_friends", {
@@ -71,8 +77,7 @@ export function Friends() {
                   style={{
                     color: "grey",
                     marginLeft: "0.5rem",
-                  }}
-                >
+                  }}>
                   (
                   {friend.balance
                     .map(
@@ -89,8 +94,7 @@ export function Friends() {
               size="small"
               onClick={() => {
                 navigate(`/friend/${friend.id}`);
-              }}
-            >
+              }}>
               Next
             </Button>
           </FriendRow>

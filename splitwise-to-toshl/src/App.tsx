@@ -38,16 +38,14 @@ function App() {
             position: "absolute",
             top: "10px",
             right: "10px",
-          }}
-        >
+          }}>
           <Typography
             variant="body1"
-            component="p"
+            component="div"
             sx={{
               textAlign: "right",
             }}
-            gutterBottom
-          >
+            gutterBottom>
             <div>Accounts:</div>
             <div>Splitwise: {userAccounts.splitwise.email} </div>
             <div>Toshl: {userAccounts.toshl.email} </div>
@@ -81,8 +79,7 @@ function App() {
             color="primary"
             onClick={() => {
               navigate("/friends");
-            }}
-          >
+            }}>
             Start
           </Button>
         ) : (
@@ -91,8 +88,7 @@ function App() {
             color="primary"
             onClick={() => {
               navigate("/settings");
-            }}
-          >
+            }}>
             Set API Keys
           </Button>
         )}
