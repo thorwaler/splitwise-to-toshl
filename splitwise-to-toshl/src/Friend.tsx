@@ -106,7 +106,7 @@ export function Friend() {
       .then((data) => {
         setExpenses(data.expenses);
       });
-  }, [friendId]);
+  }, [count, friendId, page]);
 
   return (
     <Container component="main" sx={{ mt: 8, mb: 2 }} maxWidth="sm">

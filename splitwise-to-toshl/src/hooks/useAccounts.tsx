@@ -21,6 +21,7 @@ type UserAccounts = {
 type UserAccountsContextType = {
   userAccounts: UserAccounts;
   accountsSet: boolean;
+  loadingAccounts: boolean;
   loadUserAccounts: () => void;
 };
 
@@ -33,6 +34,7 @@ const UserAccountsContext = createContext<UserAccountsContextType | undefined>(
 export const UserAccountsProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
+  const [loadingAccounts, setLoadingAccounts] = useState<boolean>(false);
   const [userAccounts, setUserAccounts] = useState<UserAccounts>({
     splitwise: {
       id: 0,
@@ -48,25 +50,61 @@ export const UserAccountsProvider: React.FC<{ children: React.ReactNode }> = ({
     return userAccounts.splitwise.id !== 0 && userAccounts.toshl.id !== 0;
   }, [userAccounts]);
 
-  const loadUserAccounts = useCallback(() => {
+  const loadUserAccounts = useCallback(async () => {
     const splitwiseAPIKey = localStorage.getItem("splitwiseAPIKey");
     const toshlAPIKey = localStorage.getItem("toshlAPIKey");
 
     if (splitwiseAPIKey && toshlAPIKey) {
-      // setUserAccounts({
-      //   splitwise: {
-      //     id: 1,
-      //     email: "",
-      //   },
-      //   toshl: {
-      //     id: 1,
-      //     email: "",
-      //   },
-      // });
+      setLoadingAccounts(true);
+      try {
+        const data = await fetch(`/api/splitwise/v3.0/get_current_user`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${splitwiseAPIKey}`,
+          },
+        });
+        const splitwiseUser = await data.json();
+        setUserAccounts((prev) => ({
+          ...prev,
+          splitwise: {
+            id: splitwiseUser.user.id,
+            email: splitwiseUser.user.email,
+          },
+        }));
+      } catch (e) {
+        console.error(e);
+      }
+
+      try {
+        const data = await fetch(`/api/toshl/me`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${toshlAPIKey}`,
+          },
+        });
+        const toshlUser = await data.json();
+        setUserAccounts((prev) => ({
+          ...prev,
+          toshl: {
+            id: toshlUser.id,
+            email: toshlUser.email,
+          },
+        }));
+      } catch (e) {
+        console.error(e);
+      }
     }
+    setLoadingAccounts(false);
   }, []);
 
-  const value = { userAccounts, loadUserAccounts, accountsSet };
+  const value = {
+    userAccounts,
+    loadUserAccounts,
+    accountsSet,
+    loadingAccounts,
+  };
 
   return (
     <UserAccountsContext.Provider value={value}>

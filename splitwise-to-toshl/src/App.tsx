@@ -3,7 +3,7 @@ import "./App.css";
 import Typography from "@mui/material/Typography";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Box, Button, Container } from "@mui/material";
+import { Box, Button, CircularProgress, Container } from "@mui/material";
 import { useUserAccounts } from "./hooks/useAccounts";
 
 function App() {
@@ -11,7 +11,8 @@ function App() {
   const toshlAPIKey = localStorage.getItem("toshlAPIKey");
 
   const navigate = useNavigate();
-  const { userAccounts, loadUserAccounts, accountsSet } = useUserAccounts();
+  const { userAccounts, loadUserAccounts, accountsSet, loadingAccounts } =
+    useUserAccounts();
 
   useEffect(() => {
     // if (!splitwiseAPIKey || !toshlAPIKey) {
@@ -24,13 +25,6 @@ function App() {
       console.log("Accounts set");
     }
   }, [accountsSet, loadUserAccounts, navigate, splitwiseAPIKey, toshlAPIKey]);
-
-  const last5Characters = (str: string | null) => {
-    if (!str) {
-      return "null";
-    }
-    return `****${str.slice(-5)}`;
-  };
 
   return (
     <Container component="main" sx={{ mt: 8, mb: 2 }} maxWidth="sm">
@@ -54,9 +48,9 @@ function App() {
             }}
             gutterBottom
           >
-            <div>API Keys:</div>
-            <div>Splitwise: {last5Characters(splitwiseAPIKey)}</div>
-            <div>Toshl: {last5Characters(toshlAPIKey)}</div>
+            <div>Accounts:</div>
+            <div>Splitwise: {userAccounts.splitwise.email} </div>
+            <div>Toshl: {userAccounts.toshl.email} </div>
             <a href="/settings">Settings</a>
           </Typography>
         </Box>
@@ -75,27 +69,34 @@ function App() {
         This tool is open source. You can view the code{" "}
       </Typography>
 
-      {accountsSet ? (
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={() => {
-            navigate("/friends");
-          }}
-        >
-          Start
-        </Button>
-      ) : (
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={() => {
-            navigate("/settings");
-          }}
-        >
-          Set API Keys
-        </Button>
-      )}
+      <Box sx={{ mt: 5 }}>
+        {loadingAccounts ? (
+          <Box>
+            <CircularProgress />
+            <Typography>Loading Accounts...</Typography>
+          </Box>
+        ) : accountsSet ? (
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => {
+              navigate("/friends");
+            }}
+          >
+            Start
+          </Button>
+        ) : (
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => {
+              navigate("/settings");
+            }}
+          >
+            Set API Keys
+          </Button>
+        )}
+      </Box>
     </Container>
   );
 }

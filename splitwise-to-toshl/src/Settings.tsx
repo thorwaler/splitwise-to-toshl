@@ -1,29 +1,43 @@
-import { Box, Button, Container, Input, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  Container,
+  Input,
+  InputLabel,
+  Typography,
+} from "@mui/material";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+const last10Characters = (str: string | null) => {
+  if (!str) {
+    return "";
+  }
+  return `*************${str.slice(-10)}`;
+};
+
 export function Settings() {
   const [saved, setSaved] = useState(false);
-  const [splitwiseAPIKey, setSplitwiseAPIKey] = useState(
-    localStorage.getItem("splitwiseAPIKey") || ""
-  );
-  const [toshlAPIKey, setToshlAPIKey] = useState(
-    localStorage.getItem("toshlAPIKey") || ""
-  );
+  const [splitwiseAPIKey, setSplitwiseAPIKey] = useState("");
+  const [toshlAPIKey, setToshlAPIKey] = useState("");
+
+  const placeholderSplitwise = localStorage.getItem("splitwiseAPIKey") || "";
+  const placeholderToshl = localStorage.getItem("toshlAPIKey") || "";
 
   const navigate = useNavigate();
   const saveKeys = () => {
-    if (saved) {
-      navigate("/");
-    } else {
-      if (!splitwiseAPIKey || !toshlAPIKey) {
-        alert("Please fill in both API keys.");
-        return;
-      }
-      localStorage.setItem("splitwiseAPIKey", splitwiseAPIKey);
-      localStorage.setItem("toshlAPIKey", toshlAPIKey);
-      setSaved(true);
+    if (saved) return;
+    if (!splitwiseAPIKey || !toshlAPIKey) {
+      alert("Please fill in both API keys.");
+      return;
     }
+    localStorage.setItem("splitwiseAPIKey", splitwiseAPIKey);
+    localStorage.setItem("toshlAPIKey", toshlAPIKey);
+    setSaved(true);
+  };
+
+  const done = () => {
+    navigate("/");
   };
   return (
     <Container component="main" sx={{ mt: 8, mb: 2 }} maxWidth="sm">
@@ -34,26 +48,40 @@ export function Settings() {
         {"Configure your Splitwise and Toshl API keys."}
       </Typography>
       <Box sx={{ m: 2, display: "flex", flexDirection: "column", gap: 2 }}>
+        <InputLabel>Splitwise API Key</InputLabel>
         <Input
           value={splitwiseAPIKey}
           onChange={(e) => {
             setSplitwiseAPIKey(e.target.value);
             setSaved(false);
           }}
-          placeholder="Splitwise API Key"
+          placeholder={
+            placeholderSplitwise ? last10Characters(placeholderSplitwise) : ""
+          }
           fullWidth
         />
+        <InputLabel>Toshl API Key</InputLabel>
         <Input
           value={toshlAPIKey}
           onChange={(e) => {
             setToshlAPIKey(e.target.value);
             setSaved(false);
           }}
-          placeholder="Toshl API Key"
+          placeholder={
+            placeholderToshl ? last10Characters(placeholderToshl) : ""
+          }
           fullWidth
         />
-        <Button variant="contained" color="primary" onClick={saveKeys}>
-          {saved ? "Done" : "Save"}
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={saveKeys}
+          disabled={saved}
+        >
+          {saved ? "Saved" : "Save"}
+        </Button>
+        <Button variant="contained" color="primary" onClick={done}>
+          Back
         </Button>
       </Box>
       <Typography variant="body2" component="h2" gutterBottom>
