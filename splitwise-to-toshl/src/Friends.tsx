@@ -1,6 +1,7 @@
 import { Box, Button, Container, styled, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useUserAccounts } from "./hooks/useAccounts";
 
 export type SplitwiseFriend = {
   id: string;
@@ -24,6 +25,13 @@ const FriendRow = styled(Box)`
 export function Friends() {
   const [friends, setFriends] = useState<SplitwiseFriend[]>([]);
   const navigate = useNavigate();
+  const { accountsSet } = useUserAccounts();
+  useEffect(() => {
+    if (!accountsSet) {
+      navigate("/");
+    }
+  }, [accountsSet, navigate]);
+
   useEffect(() => {
     fetch("/api/splitwise/v3.0/get_friends", {
       method: "GET",
@@ -63,7 +71,8 @@ export function Friends() {
                   style={{
                     color: "grey",
                     marginLeft: "0.5rem",
-                  }}>
+                  }}
+                >
                   (
                   {friend.balance
                     .map(
@@ -80,7 +89,8 @@ export function Friends() {
               size="small"
               onClick={() => {
                 navigate(`/friend/${friend.id}`);
-              }}>
+              }}
+            >
               Next
             </Button>
           </FriendRow>
