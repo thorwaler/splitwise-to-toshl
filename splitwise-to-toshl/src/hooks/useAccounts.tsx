@@ -82,59 +82,60 @@ export const UserAccountsProvider: React.FC<{ children: React.ReactNode }> = ({
 
     if (splitwiseAPIKey && toshlAPIKey) {
       setLoadingAccounts(true);
+
+      const fetchSplitwiseUser = fetch(`/api/splitwise/v3.0/get_current_user`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${splitwiseAPIKey}`,
+        },
+      }).then((response) => response.json());
+
+      const fetchToshlUser = fetch(`/api/toshl/me`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${toshlAPIKey}`,
+        },
+      }).then((response) => response.json());
+
+      const fetchToshlCategories = fetch(`/api/toshl/categories?per_page=500`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${toshlAPIKey}`,
+        },
+      }).then((response) => response.json());
+
+      const fetchToshlTags = fetch(`/api/toshl/tags?per_page=500`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${toshlAPIKey}`,
+        },
+      }).then((response) => response.json());
+
       try {
-        const data = await fetch(`/api/splitwise/v3.0/get_current_user`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${splitwiseAPIKey}`,
-          },
-        });
-        const splitwiseUser = await data.json();
+        const [splitwiseUser, toshlUser, toshlCategories, toshlTags] =
+          await Promise.all([
+            fetchSplitwiseUser,
+            fetchToshlUser,
+            fetchToshlCategories,
+            fetchToshlTags,
+          ]);
+
         setUserAccounts((prev) => ({
           ...prev,
           splitwise: {
             id: splitwiseUser.user.id,
             email: splitwiseUser.user.email,
           },
-        }));
-      } catch (e) {
-        console.error(e);
-        return false;
-      }
-
-      try {
-        const data = await fetch(`/api/toshl/me`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${toshlAPIKey}`,
-          },
-        });
-        const toshlUser = await data.json();
-        setUserAccounts((prev) => ({
-          ...prev,
           toshl: {
             id: toshlUser.id,
             email: toshlUser.email,
           },
         }));
-      } catch (e) {
-        console.error(e);
-        return false;
-      }
 
-      console.log("Getting categories and tags");
-      // Get catrgories from Toshl
-      try {
-        const data = await fetch(`/api/toshl/categories?per_page=500`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${toshlAPIKey}`,
-          },
-        });
-        const toshlCategories = await data.json();
         const filteredCategories: ToshlCategory[] = [];
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         toshlCategories.forEach((c: any) => {
@@ -147,20 +148,7 @@ export const UserAccountsProvider: React.FC<{ children: React.ReactNode }> = ({
           }
         });
         setCategories(filteredCategories);
-      } catch (e) {
-        console.error(e);
-        return false;
-      }
 
-      try {
-        const data = await fetch(`/api/toshl/tags?per_page=500`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${toshlAPIKey}`,
-          },
-        });
-        const toshlTags = await data.json();
         const filteredTags: ToshlTag[] = [];
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         toshlTags.forEach((t: any) => {
@@ -176,13 +164,14 @@ export const UserAccountsProvider: React.FC<{ children: React.ReactNode }> = ({
         setTags(filteredTags);
       } catch (e) {
         console.error(e);
+        setLoadingAccounts(false);
         return false;
       }
 
-      // Get tags from Toshl
+      setLoadingAccounts(false);
+      return true;
     }
-    setLoadingAccounts(false);
-    return true;
+    return false;
   }, []);
 
   const totalTags = useMemo(() => {
