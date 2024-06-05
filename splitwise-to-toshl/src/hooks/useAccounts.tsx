@@ -18,11 +18,31 @@ type UserAccounts = {
   };
 };
 
+export type ToshlCategory = {
+  // Should only contain non deleted categories and expense categories
+  id: string;
+  name: string;
+  entries: number;
+};
+
+export type ToshlTag = {
+  // Should only contain non deleted tags and expense categories
+  id: string;
+  category_id: string;
+  name: string;
+  entries: number;
+};
+
 type UserAccountsContextType = {
   userAccounts: UserAccounts;
   accountsSet: boolean;
   loadingAccounts: boolean;
   loadUserAccounts: () => Promise<boolean>;
+  setSelectedTag(id: string): void;
+  selectedTag: ToshlTag | undefined;
+  totalTags: number;
+  totalCategories: number;
+  allTags: ToshlTag[];
 };
 
 // Create the context
@@ -45,6 +65,12 @@ export const UserAccountsProvider: React.FC<{ children: React.ReactNode }> = ({
       email: "",
     },
   });
+
+  const [categories, setCategories] = useState<ToshlCategory[]>([]);
+  const [tags, setTags] = useState<ToshlTag[]>([]);
+  const [selectedTagId, setSelectedTagId] = useState<string>(
+    localStorage.getItem("selectedTag") || ""
+  );
 
   const accountsSet = useMemo(() => {
     return userAccounts.splitwise.id !== 0 && userAccounts.toshl.id !== 0;
@@ -109,8 +135,18 @@ export const UserAccountsProvider: React.FC<{ children: React.ReactNode }> = ({
           },
         });
         const toshlCategories = await data.json();
-
-        console.log(toshlCategories);
+        const filteredCategories: ToshlCategory[] = [];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        toshlCategories.forEach((c: any) => {
+          if (!c?.deleted && c?.type === "expense") {
+            filteredCategories.push({
+              id: c?.id,
+              name: c?.name,
+              entries: c?.counts?.entries,
+            });
+          }
+        });
+        setCategories(filteredCategories);
       } catch (e) {
         console.error(e);
         return false;
@@ -125,8 +161,19 @@ export const UserAccountsProvider: React.FC<{ children: React.ReactNode }> = ({
           },
         });
         const toshlTags = await data.json();
-
-        console.log(toshlTags);
+        const filteredTags: ToshlTag[] = [];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        toshlTags.forEach((t: any) => {
+          if (!t?.deleted && t?.type === "expense") {
+            filteredTags.push({
+              id: t?.id,
+              category_id: t?.category,
+              name: t?.name,
+              entries: t?.counts?.entries,
+            });
+          }
+        });
+        setTags(filteredTags);
       } catch (e) {
         console.error(e);
         return false;
@@ -138,11 +185,46 @@ export const UserAccountsProvider: React.FC<{ children: React.ReactNode }> = ({
     return true;
   }, []);
 
+  const totalTags = useMemo(() => {
+    return tags.length;
+  }, [tags]);
+
+  const totalCategories = useMemo(() => {
+    return categories.length;
+  }, [categories]);
+
+  const setSelectedTag = useCallback(
+    (id: string) => {
+      // Check if tag exists
+      const tag = tags.find((t) => t.id === id);
+      if (!tag) {
+        return;
+      }
+
+      setSelectedTagId(id);
+      localStorage.setItem("selectedTag", id);
+    },
+    [tags]
+  );
+
+  const selectedTag = useMemo(() => {
+    return tags.find((t) => t.id === selectedTagId);
+  }, [tags, selectedTagId]);
+
+  const allTags = useMemo(() => {
+    return tags;
+  }, [tags]);
+
   const value = {
     userAccounts,
     loadUserAccounts,
     accountsSet,
     loadingAccounts,
+    totalTags,
+    totalCategories,
+    setSelectedTag,
+    selectedTag,
+    allTags,
   };
 
   return (

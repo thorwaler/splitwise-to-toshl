@@ -6,8 +6,9 @@ import {
   InputLabel,
   Typography,
 } from "@mui/material";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useUserAccounts } from "./hooks/useAccounts";
 
 const last10Characters = (str: string | null) => {
   if (!str) {
@@ -23,6 +24,13 @@ export function Settings() {
 
   const placeholderSplitwise = localStorage.getItem("splitwiseAPIKey") || "";
   const placeholderToshl = localStorage.getItem("toshlAPIKey") || "";
+
+  const { selectedTag, setSelectedTag, allTags, loadUserAccounts } =
+    useUserAccounts();
+
+  useEffect(() => {
+    loadUserAccounts();
+  }, [loadUserAccounts]);
 
   const navigate = useNavigate();
   const saveKeys = () => {
@@ -91,6 +99,33 @@ export function Settings() {
       <Typography variant="body2" component="h2" gutterBottom>
         If you clear your cache these will be deleted{" "}
       </Typography>
+
+      <Typography variant="body2" component="h2" gutterBottom>
+        Select a tag you want to assign to the expenses from this tool
+      </Typography>
+
+      {allTags.map((tag) => (
+        <Box
+          key={tag.id}
+          sx={{
+            display: "flex",
+            flexDirection: "row",
+            justifyContent: "space-between",
+          }}
+        >
+          <Typography>{tag.name}</Typography>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => {
+              setSelectedTag(tag.id);
+            }}
+            disabled={selectedTag?.id === tag.id}
+          >
+            {selectedTag?.id === tag.id ? "Selected" : "Select"}
+          </Button>
+        </Box>
+      ))}
     </Container>
   );
 }

@@ -11,8 +11,15 @@ function App() {
   const toshlAPIKey = localStorage.getItem("toshlAPIKey");
 
   const navigate = useNavigate();
-  const { userAccounts, loadUserAccounts, accountsSet, loadingAccounts } =
-    useUserAccounts();
+  const {
+    userAccounts,
+    loadUserAccounts,
+    accountsSet,
+    loadingAccounts,
+    totalCategories,
+    totalTags,
+    selectedTag,
+  } = useUserAccounts();
 
   useEffect(() => {
     // if (!splitwiseAPIKey || !toshlAPIKey) {
@@ -31,28 +38,6 @@ function App() {
       <Typography variant="h2" component="h1" gutterBottom>
         Splitwise to Toshl
       </Typography>
-
-      {accountsSet && (
-        <Box
-          sx={{
-            position: "absolute",
-            top: "10px",
-            right: "10px",
-          }}>
-          <Typography
-            variant="body1"
-            component="div"
-            sx={{
-              textAlign: "right",
-            }}
-            gutterBottom>
-            <div>Accounts:</div>
-            <div>Splitwise: {userAccounts.splitwise.email} </div>
-            <div>Toshl: {userAccounts.toshl.email} </div>
-            <a href="/settings">Settings</a>
-          </Typography>
-        </Box>
-      )}
 
       <Typography variant="h6" component="h2" gutterBottom>
         This is a tool to transfer your Splitwise transactions to Toshl.
@@ -79,7 +64,8 @@ function App() {
             color="primary"
             onClick={() => {
               navigate("/friends");
-            }}>
+            }}
+          >
             Start
           </Button>
         ) : (
@@ -88,11 +74,28 @@ function App() {
             color="primary"
             onClick={() => {
               navigate("/settings");
-            }}>
+            }}
+          >
             Set API Keys
           </Button>
         )}
       </Box>
+
+      {accountsSet && (
+        <Box sx={{ mt: 5 }}>
+          <Typography variant="body1" component="div" gutterBottom>
+            <div>Accounts:</div>
+            <div>Splitwise: {userAccounts.splitwise.email} </div>
+            <div>Toshl: {userAccounts.toshl.email} </div>
+            <div>Total Categories: {totalCategories}</div>
+            <div>Total Tags: {totalTags}</div>
+            <div>
+              Selected Tag: {selectedTag?.name} ({selectedTag?.id})
+            </div>
+            <a href="/settings">Settings</a>
+          </Typography>
+        </Box>
+      )}
     </Container>
   );
 }
