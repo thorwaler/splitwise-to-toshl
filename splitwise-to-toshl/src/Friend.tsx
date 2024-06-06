@@ -2,21 +2,24 @@ import {
   Autocomplete,
   Box,
   Button,
+  Chip,
   Container,
   FormControlLabel,
-  FormGroup,
   Modal,
+  Stack,
   Switch,
   TextField,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useUserAccounts } from "./hooks/useAccounts";
 
+import CloseIcon from "@mui/icons-material/Close";
+import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import { Expense, ExpenseElement } from "./ExpenseElement";
 import { SplitwiseFriend } from "./Friends";
-import CloseIcon from "@mui/icons-material/Close";
 
 const modalStyle = {
   position: "absolute",
@@ -38,14 +41,51 @@ function AddExpense({
   expense: Expense | null;
   closeModal: () => void;
 }) {
-  const { categories } = useUserAccounts();
+  const { categories, allTags, selectedTag } = useUserAccounts();
 
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const categoryOptions = useMemo(
-    () => (categories ? categories.map((c) => c.name) : []),
+    () =>
+      categories
+        ? categories.map((c) => {
+            return { id: c.id, label: c.name };
+          })
+        : [],
     [categories]
   );
 
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const tagOptions = useMemo(() => {
+    if (selectedCategory === null) {
+      const tags = allTags;
+
+      tags.sort((a, b) => b.entries - a.entries);
+
+      return tags.map((tag) => {
+        return { id: tag.id, label: tag.name };
+      });
+    }
+    // Sort tags by entries
+    const categoryTags = allTags.filter(
+      (tag) => tag.category_id === selectedCategory
+    );
+    categoryTags.sort((a, b) => b.entries - a.entries);
+    // Get tags that are not part of the selected category
+    const otherTags = allTags.filter(
+      (tag) => tag.category_id !== selectedCategory
+    );
+    // Sort tags by entries
+    otherTags.sort((a, b) => b.entries - a.entries);
+
+    return [
+      ...categoryTags.map((tag) => {
+        return { id: tag.id, label: tag.name };
+      }),
+      ...otherTags.map((tag) => {
+        return { id: tag.id, label: tag.name };
+      }),
+    ];
+  }, [allTags, selectedCategory]);
 
   if (expense === null) {
     return <>Error: No expense selected</>;
@@ -94,37 +134,76 @@ function AddExpense({
           </Typography>
         </Box>
       </Box>
-      <Box
+      <Stack
         sx={{
           my: 4,
-        }}>
+        }}
+        spacing={2}>
         <Autocomplete
           disableClearable
           disablePortal
           id="category"
+          getOptionLabel={(option) => option.label}
           options={categoryOptions}
           sx={{ width: "100%" }}
+          onChange={(e, value) => {
+            setSelectedCategory(value?.id);
+          }}
+          renderInput={(params) => <TextField {...params} label="Category" />}
+        />
+
+        <Autocomplete
+          multiple
+          id="tags-standard"
+          options={tagOptions}
+          getOptionLabel={(option) => option.label}
+          isOptionEqualToValue={(option, value) => option.id === value.id}
+          onChange={(e, value) => {
+            console.log(value);
+            setSelectedTags(value.map((v) => v.id));
+          }}
           renderInput={(params) => (
             <TextField
               {...params}
-              label="Category"
-              onChange={(e) => {
-                setSelectedCategory(e.target.value);
-              }}
+              label="Multiple values"
+              placeholder="Favorites"
             />
           )}
         />
-        <FormGroup>
+        <Stack
+          direction={"row"}
+          justifyContent={"space-between"}
+          alignItems={"end"}>
+          <Stack gap={1}>
+            <Stack direction={"row"} gap={1} alignItems={"center"}>
+              <Typography variant="subtitle1" component="div">
+                Splitwise tag
+              </Typography>
+              <Tooltip
+                title="This category will automatically be added to every expense. You can change this in the settings"
+                placement="top">
+                <HelpOutlineIcon />
+              </Tooltip>
+            </Stack>
+
+            <Chip label={selectedTag?.name} />
+          </Stack>
+
           <Button
+            disabled={!selectedCategory}
+            size="large"
             variant="contained"
             color="primary"
+            sx={{
+              px: 4,
+            }}
             onClick={() => {
               console.log("Add to Toshl");
             }}>
             Add
           </Button>
-        </FormGroup>
-      </Box>
+        </Stack>
+      </Stack>
     </Box>
   );
 }
@@ -278,6 +357,7 @@ export function Friend() {
                 .filter((e) => e.involved)
                 .map((expense) => (
                   <ExpenseElement
+                    key={expense.description + expense.date}
                     expense={expense}
                     selectExpense={() => {
                       setSelectedExpense(expense);
@@ -286,6 +366,7 @@ export function Friend() {
                 ))
             : expenses.map((expense) => (
                 <ExpenseElement
+                  key={expense.description + expense.date}
                   expense={expense}
                   selectExpense={() => {
                     setSelectedExpense(expense);
