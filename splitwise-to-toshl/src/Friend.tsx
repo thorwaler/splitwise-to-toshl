@@ -1,13 +1,16 @@
 import {
+  Autocomplete,
   Box,
   Button,
   Container,
   FormControlLabel,
+  FormGroup,
   Modal,
   Switch,
+  TextField,
   Typography,
 } from "@mui/material";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useUserAccounts } from "./hooks/useAccounts";
 
@@ -35,6 +38,15 @@ function AddExpense({
   expense: Expense | null;
   closeModal: () => void;
 }) {
+  const { categories } = useUserAccounts();
+
+  const categoryOptions = useMemo(
+    () => (categories ? categories.map((c) => c.name) : []),
+    [categories]
+  );
+
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+
   if (expense === null) {
     return <>Error: No expense selected</>;
   }
@@ -81,6 +93,37 @@ function AddExpense({
             My Share: {expense.share_amount} {expense.currency}
           </Typography>
         </Box>
+      </Box>
+      <Box
+        sx={{
+          my: 4,
+        }}>
+        <Autocomplete
+          disableClearable
+          disablePortal
+          id="category"
+          options={categoryOptions}
+          sx={{ width: "100%" }}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              label="Category"
+              onChange={(e) => {
+                setSelectedCategory(e.target.value);
+              }}
+            />
+          )}
+        />
+        <FormGroup>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => {
+              console.log("Add to Toshl");
+            }}>
+            Add
+          </Button>
+        </FormGroup>
       </Box>
     </Box>
   );

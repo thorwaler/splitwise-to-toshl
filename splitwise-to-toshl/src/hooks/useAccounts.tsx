@@ -42,6 +42,7 @@ type UserAccountsContextType = {
   selectedTag: ToshlTag | undefined;
   totalTags: number;
   totalCategories: number;
+  categories: ToshlCategory[];
   allTags: ToshlTag[];
 };
 
@@ -182,6 +183,13 @@ export const UserAccountsProvider: React.FC<{ children: React.ReactNode }> = ({
     return categories.length;
   }, [categories]);
 
+  const cats = useMemo(() => {
+    const cat = categories;
+    // Sort by entries
+    cat.sort((a, b) => b.entries - a.entries);
+    return cat;
+  }, [categories]);
+
   const setSelectedTag = useCallback(
     (id: string) => {
       // Check if tag exists
@@ -211,6 +219,7 @@ export const UserAccountsProvider: React.FC<{ children: React.ReactNode }> = ({
     loadingAccounts,
     totalTags,
     totalCategories,
+    categories: cats,
     setSelectedTag,
     selectedTag,
     allTags,
