@@ -54,6 +54,57 @@ export function AddExpenseForm({
   //   };
   // }, [closeModal]);
 
+  const addExpenseToToshl = async () => {
+    console.log("Add to Toshl");
+    if (expense === null) {
+      alert("Error: No expense selected");
+      return;
+    }
+    // Data from python
+    // data = {
+    //   "amount": -abs(float(e['share_amount'])),
+    //   "currency": {"code": e['currency']},
+    //   "date": e['date'],
+    //   "desc": e['description'],
+    //   "category": selected_category['id'],
+    //   "extra": {
+    //     "friends": e['friends']
+    //   }
+    // }
+    const data = {
+      amount: -Math.abs(expense.share_amount),
+      currency: { code: expense.currency },
+      date: expense.date,
+      desc: expense.description,
+      category: selectedCategory,
+      extra: {
+        friends: selectedTags,
+        expense_id: expense.id,
+      },
+      tags: [selectedTag?.id, ...selectedTags].filter((t) => t),
+    };
+    console.log(data);
+
+    try {
+      const res = await fetch("/api/toshl/entries", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("toshlAPIKey")}`,
+        },
+        body: JSON.stringify(data),
+      });
+      if (res.ok) {
+        alert("Expense added to Toshl");
+      } else {
+        alert("Error adding expense to Toshl");
+      }
+    } catch (e) {
+      console.error(e);
+      alert("Error adding expense to Toshl");
+    }
+  };
+
   const categoryOptions = useMemo(
     () =>
       categories
@@ -208,7 +259,7 @@ export function AddExpenseForm({
               px: 4,
             }}
             onClick={() => {
-              console.log("Add to Toshl");
+              addExpenseToToshl();
             }}>
             Add
           </Button>

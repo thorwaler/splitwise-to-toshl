@@ -75,6 +75,7 @@ export function Friend() {
         const normalisedExpenseArray = [];
         for (const e of expensesArr) {
           const expense: Expense = {
+            id: e.id,
             category: e.category.name,
             description: e.description,
             currency: e.currency_code,

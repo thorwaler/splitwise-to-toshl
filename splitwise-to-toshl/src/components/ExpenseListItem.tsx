@@ -1,6 +1,7 @@
 import { Box, Typography, Chip, Button } from "@mui/material";
 
 export type Expense = {
+  id: string;
   category: string;
   description: string;
   currency: string;
