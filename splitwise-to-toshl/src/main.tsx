@@ -1,6 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import App from "./App.tsx";
+import Home from "./Home.tsx";
 import Container from "@mui/material/Container";
 import Typography from "@mui/material/Typography";
 
@@ -9,7 +9,7 @@ import CssBaseline from "@mui/material/CssBaseline";
 import Box from "@mui/material/Box";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { ThemeProvider } from "@emotion/react";
-import { createTheme } from "@mui/material";
+import { createTheme, Stack } from "@mui/material";
 import { Copyright } from "./Copyright.tsx";
 import { Settings } from "./Settings.tsx";
 import { Friends } from "./Friends.tsx";
@@ -19,7 +19,7 @@ import { UserAccountsProvider } from "./hooks/useAccounts.tsx";
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <App />,
+    element: <Home />,
   },
   {
     path: "/settings",
@@ -45,13 +45,10 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <ThemeProvider theme={defaultTheme}>
       <UserAccountsProvider>
-        <Box
+        <Stack
           sx={{
-            display: "flex",
-            flexDirection: "column",
             minHeight: "100vh",
-          }}
-        >
+          }}>
           <CssBaseline />
 
           <RouterProvider router={router} />
@@ -66,8 +63,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
                 theme.palette.mode === "light"
                   ? theme.palette.grey[200]
                   : theme.palette.grey[800],
-            }}
-          >
+            }}>
             <Container maxWidth="sm">
               <Typography variant="body1">
                 Welcome to Splitwise to Toshl
@@ -75,7 +71,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
               <Copyright />
             </Container>
           </Box>
-        </Box>
+        </Stack>
       </UserAccountsProvider>
     </ThemeProvider>
   </React.StrictMode>

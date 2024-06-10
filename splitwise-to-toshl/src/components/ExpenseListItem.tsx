@@ -11,7 +11,7 @@ export type Expense = {
   involved: boolean;
 };
 
-export const ExpenseElement = ({
+export const ExpenseListItem = ({
   expense,
   selectExpense,
 }: {

@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { Box, Button, CircularProgress, Container } from "@mui/material";
 import { useUserAccounts } from "./hooks/useAccounts";
 
-function App() {
+function Home() {
   const splitwiseAPIKey = localStorage.getItem("splitwiseAPIKey");
   const toshlAPIKey = localStorage.getItem("toshlAPIKey");
 
@@ -64,8 +64,7 @@ function App() {
             color="primary"
             onClick={() => {
               navigate("/friends");
-            }}
-          >
+            }}>
             Start
           </Button>
         ) : (
@@ -74,8 +73,7 @@ function App() {
             color="primary"
             onClick={() => {
               navigate("/settings");
-            }}
-          >
+            }}>
             Set API Keys
           </Button>
         )}
@@ -100,4 +98,4 @@ function App() {
   );
 }
 
-export default App;
+export default Home;

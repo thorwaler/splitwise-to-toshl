@@ -1,4 +1,11 @@
-import { Box, Button, Container, styled, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  Container,
+  Stack,
+  styled,
+  Typography,
+} from "@mui/material";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUserAccounts } from "./hooks/useAccounts";
@@ -67,7 +74,7 @@ export function Friends() {
       <Typography variant="h5" component="h2" gutterBottom>
         {"Select who you want to transfer transactions for."}
       </Typography>
-      <Box sx={{ p: 2, display: "flex", flexDirection: "column", gap: 1 }}>
+      <Stack padding={2} spacing={1}>
         {friends.map((friend) => (
           <FriendRow key={friend.id}>
             <Typography variant="body1" component="p">
@@ -99,7 +106,7 @@ export function Friends() {
             </Button>
           </FriendRow>
         ))}
-      </Box>
+      </Stack>
     </Container>
   );
 }
