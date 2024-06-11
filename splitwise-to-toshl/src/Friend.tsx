@@ -8,24 +8,30 @@ import {
   Switch,
   Typography,
 } from "@mui/material";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { useUserAccounts } from "./hooks/useAccounts";
+import { ToshlExpense, useUserAccounts } from "./hooks/useAccounts";
 
 import { AddExpenseForm } from "./components/AddExpenseForm";
 import { Expense, ExpenseListItem } from "./components/ExpenseListItem";
 import { SplitwiseFriend } from "./Friends";
+import { format, subDays } from "date-fns";
 
 export function Friend() {
   const { friendId } = useParams();
   const [friend, setFriend] = useState<SplitwiseFriend | null>(null);
   const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [latestExpenseDate, setLatestExpenseDate] = useState<string | null>();
+  const [existingEntriesOnToshl, setExistingEntriesOnToshl] = useState<
+    ToshlExpense[]
+  >([]);
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
   const [page, setPage] = useState(0);
   const count = 30;
   const [showInvolved, setShowInvolved] = useState(true);
 
-  const { userAccounts, accountsSet, loadUserAccounts } = useUserAccounts();
+  const { userAccounts, accountsSet, loadUserAccounts, selectedTag } =
+    useUserAccounts();
   const navigate = useNavigate();
   useEffect(() => {
     async function checkUserAccount() {
@@ -40,9 +46,45 @@ export function Friend() {
   }, [accountsSet, loadUserAccounts, navigate]);
 
   useEffect(() => {
+    if (!latestExpenseDate || !selectedTag) {
+      return;
+    }
+
+    console.log(
+      "Getting existing entries on Toshl",
+      latestExpenseDate,
+      selectedTag.id
+    );
+    // Get exising entries on Toshl
+    // Date range is latest expense - 100 days
+    const endDate = format(new Date(latestExpenseDate), "yyyy-MM-dd");
+    const startDate = format(
+      subDays(new Date(latestExpenseDate), 100),
+      "yyyy-MM-dd"
+    );
+    // Only get the items with the splitwise tag
+    fetch(
+      `/api/toshl/entries?type=expense&tags=${selectedTag.id}&from=${startDate}&to=${endDate}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("toshlAPIKey")}`,
+        },
+      }
+    )
+      .then((res) => res.json())
+      .then((data) => {
+        console.log(data);
+        setExistingEntriesOnToshl(data as ToshlExpense[]);
+      });
+  }, [selectedTag, latestExpenseDate]);
+
+  useEffect(() => {
     if (friendId === undefined) {
       return;
     }
+
     // Get friend details
     fetch(`/api/splitwise/v3.0/get_friend/${friendId}`, {
       method: "GET",
@@ -108,8 +150,23 @@ export function Friend() {
           normalisedExpenseArray.push(expense);
         }
         setExpenses(normalisedExpenseArray);
+        // Find the latest expense date
+        const latestExpenseDate = normalisedExpenseArray.reduce(
+          (prev, current) => (prev.date > current.date ? prev : current)
+        );
+
+        setLatestExpenseDate(latestExpenseDate.date);
       });
   }, [count, friendId, page, userAccounts.splitwise.id]);
+
+  const checkIfExpenseExistsOnToshl = useCallback(
+    (expense: Expense) => {
+      return existingEntriesOnToshl.some(
+        (e) => `${e.extra.expense_id}` === `${expense.id}`
+      );
+    },
+    [existingEntriesOnToshl]
+  );
 
   return (
     <Container component="main" sx={{ mt: 8, mb: 2 }} maxWidth="sm">
@@ -170,6 +227,7 @@ export function Friend() {
                     selectExpense={() => {
                       setSelectedExpense(expense);
                     }}
+                    toshlExists={checkIfExpenseExistsOnToshl(expense)}
                   />
                 ))
             : expenses.map((expense) => (
@@ -179,6 +237,7 @@ export function Friend() {
                   selectExpense={() => {
                     setSelectedExpense(expense);
                   }}
+                  toshlExists={checkIfExpenseExistsOnToshl(expense)}
                 />
               ))}
 

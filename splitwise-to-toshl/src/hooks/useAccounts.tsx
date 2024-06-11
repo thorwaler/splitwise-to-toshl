@@ -33,6 +33,30 @@ export type ToshlTag = {
   entries: number;
 };
 
+export type ToshlExpense = {
+  id: string;
+  amount: number;
+  currency: {
+    code: string;
+    rate: number;
+    main_rate: number;
+    fixed: boolean;
+  };
+  date: string;
+  desc: string;
+  account: string;
+  category: string;
+  tags: string[];
+  created: string;
+  modified: string;
+  completed: boolean;
+  deleted: boolean;
+  extra: {
+    expense_id?: number;
+    friends?: string[];
+  };
+};
+
 type UserAccountsContextType = {
   userAccounts: UserAccounts;
   accountsSet: boolean;

@@ -78,8 +78,8 @@ export function AddExpenseForm({
       desc: expense.description,
       category: selectedCategory,
       extra: {
-        friends: selectedTags,
         expense_id: expense.id,
+        friends: expense.friends,
       },
       tags: [selectedTag?.id, ...selectedTags].filter((t) => t),
     };

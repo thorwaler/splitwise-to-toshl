@@ -1,7 +1,7 @@
 import { Box, Typography, Chip, Button } from "@mui/material";
 
 export type Expense = {
-  id: string;
+  id: number;
   category: string;
   description: string;
   currency: string;
@@ -15,9 +15,11 @@ export type Expense = {
 export const ExpenseListItem = ({
   expense,
   selectExpense,
+  toshlExists,
 }: {
   expense: Expense;
   selectExpense: () => void;
+  toshlExists: boolean;
 }) => {
   return (
     <Box
@@ -36,7 +38,16 @@ export const ExpenseListItem = ({
           {expense.description}
         </Typography>
         <Typography variant="body2" component="h3" align="left">
-          {expense.date}
+          {expense.date}{" "}
+          {toshlExists ? (
+            <Chip
+              label="In Toshl"
+              size="small"
+              variant="outlined"
+              color="warning"
+              sx={{ ml: 1 }}
+            />
+          ) : null}
         </Typography>
       </Box>
 
