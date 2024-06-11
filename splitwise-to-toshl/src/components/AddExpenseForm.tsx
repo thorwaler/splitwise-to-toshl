@@ -8,7 +8,7 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 
 import CloseIcon from "@mui/icons-material/Close";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
@@ -28,15 +28,18 @@ const modalStyle = {
   p: 4,
 };
 
+interface AddExpenseFormProps {
+  expense: Expense | null;
+  toshlExists: boolean;
+  closeModal: () => void;
+}
+
 export function AddExpenseForm({
   expense,
+  toshlExists,
   closeModal,
-}: {
-  expense: Expense | null;
-  closeModal: () => void;
-}) {
+}: AddExpenseFormProps) {
   const { categories, allTags, selectedTag } = useUserAccounts();
-  const categoryField = useRef<HTMLInputElement>(null);
 
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
@@ -60,17 +63,6 @@ export function AddExpenseForm({
       alert("Error: No expense selected");
       return;
     }
-    // Data from python
-    // data = {
-    //   "amount": -abs(float(e['share_amount'])),
-    //   "currency": {"code": e['currency']},
-    //   "date": e['date'],
-    //   "desc": e['description'],
-    //   "category": selected_category['id'],
-    //   "extra": {
-    //     "friends": e['friends']
-    //   }
-    // }
     const data = {
       amount: -Math.abs(expense.share_amount),
       currency: { code: expense.currency },
@@ -210,9 +202,7 @@ export function AddExpenseForm({
             setSelectedCategory(value?.id);
           }}
           tabIndex={0}
-          renderInput={(params) => (
-            <TextField inputRef={categoryField} {...params} label="Category" />
-          )}
+          renderInput={(params) => <TextField {...params} label="Category" />}
         />
 
         <Autocomplete
@@ -233,7 +223,8 @@ export function AddExpenseForm({
         <Stack
           direction={"row"}
           justifyContent={"space-between"}
-          alignItems={"end"}>
+          alignItems={"end"}
+          gap={1}>
           <Stack gap={1}>
             <Stack direction={"row"} gap={1} alignItems={"center"}>
               <Typography variant="subtitle1" component="div">
@@ -249,6 +240,18 @@ export function AddExpenseForm({
             <Chip label={selectedTag?.name} />
           </Stack>
 
+          {toshlExists && (
+            <Typography
+              variant="body2"
+              component="div"
+              align="right"
+              color={"error"}
+              sx={{
+                flexGrow: 1,
+              }}>
+              Already exists in Toshl
+            </Typography>
+          )}
           <Button
             disabled={!selectedCategory}
             size="large"

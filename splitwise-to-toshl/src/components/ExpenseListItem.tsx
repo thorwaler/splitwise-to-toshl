@@ -65,7 +65,7 @@ export const ExpenseListItem = ({
             My Share: {expense.share_amount} {expense.currency}
           </Typography>
         ) : (
-          <Chip label="No share" />
+          <Chip label="No share" size="small" color="error" />
         )}
       </Box>
       {expense.involved && (

@@ -12,7 +12,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ToshlExpense, useUserAccounts } from "./hooks/useAccounts";
 
-import { AddExpenseForm } from "./components/AddExpenseForm";
+import { AddExpenseForm, AddExpenseForm2 } from "./components/AddExpenseForm";
 import { Expense, ExpenseListItem } from "./components/ExpenseListItem";
 import { SplitwiseFriend } from "./Friends";
 import { format, subDays } from "date-fns";
@@ -160,7 +160,13 @@ export function Friend() {
   }, [count, friendId, page, userAccounts.splitwise.id]);
 
   const checkIfExpenseExistsOnToshl = useCallback(
-    (expense: Expense) => {
+    (expense: Expense | null) => {
+      if (!existingEntriesOnToshl) {
+        return false;
+      }
+      if (!expense) {
+        return false;
+      }
       return existingEntriesOnToshl.some(
         (e) => `${e.extra.expense_id}` === `${expense.id}`
       );
@@ -273,8 +279,9 @@ export function Friend() {
         </Typography>
       )}
       <Modal open={!!selectedExpense}>
-        <AddExpenseForm
+        <AddExpenseForm2
           expense={selectedExpense}
+          toshlExists={checkIfExpenseExistsOnToshl(selectedExpense)}
           closeModal={() => {
             setSelectedExpense(null);
           }}
