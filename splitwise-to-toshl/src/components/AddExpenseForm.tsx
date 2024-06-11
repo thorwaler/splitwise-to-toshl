@@ -8,7 +8,7 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import CloseIcon from "@mui/icons-material/Close";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
@@ -32,12 +32,20 @@ interface AddExpenseFormProps {
   expense: Expense | null;
   toshlExists: boolean;
   closeModal: () => void;
+  previousExpense: () => void;
+  nextExpense: () => void;
+  hasPrevious: boolean;
+  hasNext: boolean;
 }
 
 export function AddExpenseForm({
   expense,
   toshlExists,
   closeModal,
+  previousExpense,
+  nextExpense,
+  hasPrevious,
+  hasNext,
 }: AddExpenseFormProps) {
   const { categories, allTags, selectedTag } = useUserAccounts();
 
@@ -45,20 +53,31 @@ export function AddExpenseForm({
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
   // useEffect(() => {
+  //   console.log("Adding event listener");
   //   window.addEventListener("keydown", (e) => {
-  //     if (e.key === "c" && (e.ctrlKey || e.metaKey)) {
-  //       console.log("Focus category field");
-  //       categoryField.current?.click();
-  //       e.preventDefault();
+  //     if (e.key.toLowerCase().includes("left")) {
+  //       if (hasPrevious) {
+  //         previousExpense();
+  //       }
+  //     }
+  //     if (e.key.toLowerCase().includes("right")) {
+  //       if (hasNext) {
+  //         nextExpense();
+  //       }
   //     }
   //   });
   //   return () => {
+  //     console.log("Removing event listener");
   //     window.removeEventListener("keydown", () => {});
   //   };
-  // }, [closeModal]);
+  // }, [closeModal, hasNext, hasPrevious, nextExpense, previousExpense]);
 
   const addExpenseToToshl = async () => {
-    console.log("Add to Toshl");
+    if (toshlExists) {
+      if (!window.confirm("This expense already exists in Toshl. Continue?")) {
+        return;
+      }
+    }
     if (expense === null) {
       alert("Error: No expense selected");
       return;
@@ -75,7 +94,6 @@ export function AddExpenseForm({
       },
       tags: [selectedTag?.id, ...selectedTags].filter((t) => t),
     };
-    console.log(data);
 
     try {
       const res = await fetch("/api/toshl/entries", {
@@ -87,7 +105,7 @@ export function AddExpenseForm({
         body: JSON.stringify(data),
       });
       if (res.ok) {
-        alert("Expense added to Toshl");
+        nextExpense();
       } else {
         alert("Error adding expense to Toshl");
       }
@@ -240,7 +258,7 @@ export function AddExpenseForm({
             <Chip label={selectedTag?.name} />
           </Stack>
 
-          {toshlExists && (
+          {toshlExists ? (
             <Typography
               variant="body2"
               component="div"
@@ -251,7 +269,40 @@ export function AddExpenseForm({
               }}>
               Already exists in Toshl
             </Typography>
+          ) : (
+            <Box
+              sx={{
+                flexGrow: 1,
+              }}></Box>
           )}
+          <Button
+            disabled={!hasPrevious}
+            size="large"
+            variant="contained"
+            color="secondary"
+            tabIndex={3}
+            sx={{
+              px: 4,
+            }}
+            onClick={() => {
+              previousExpense();
+            }}>
+            Prev
+          </Button>
+          <Button
+            disabled={!hasNext}
+            size="large"
+            variant="contained"
+            color="secondary"
+            tabIndex={3}
+            sx={{
+              px: 4,
+            }}
+            onClick={() => {
+              nextExpense();
+            }}>
+            Next
+          </Button>
           <Button
             disabled={!selectedCategory}
             size="large"

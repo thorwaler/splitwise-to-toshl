@@ -12,7 +12,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ToshlExpense, useUserAccounts } from "./hooks/useAccounts";
 
-import { AddExpenseForm, AddExpenseForm2 } from "./components/AddExpenseForm";
+import { AddExpenseForm } from "./components/AddExpenseForm";
 import { Expense, ExpenseListItem } from "./components/ExpenseListItem";
 import { SplitwiseFriend } from "./Friends";
 import { format, subDays } from "date-fns";
@@ -26,6 +26,9 @@ export function Friend() {
     ToshlExpense[]
   >([]);
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
+  const [selectedExpenseIndex, setSelectedExpenseIndex] = useState<
+    number | null
+  >(null);
   const [page, setPage] = useState(0);
   const count = 30;
   const [showInvolved, setShowInvolved] = useState(true);
@@ -174,6 +177,28 @@ export function Friend() {
     [existingEntriesOnToshl]
   );
 
+  const previousExpense = useCallback(() => {
+    if (selectedExpenseIndex === null) {
+      return;
+    }
+    if (selectedExpenseIndex === 0) {
+      return;
+    }
+    setSelectedExpenseIndex(selectedExpenseIndex - 1);
+    setSelectedExpense(expenses[selectedExpenseIndex - 1]);
+  }, [selectedExpenseIndex, expenses]);
+
+  const nextExpense = useCallback(() => {
+    if (selectedExpenseIndex === null) {
+      return;
+    }
+    if (selectedExpenseIndex === expenses.length - 1) {
+      return;
+    }
+    setSelectedExpenseIndex(selectedExpenseIndex + 1);
+    setSelectedExpense(expenses[selectedExpenseIndex + 1]);
+  }, [selectedExpenseIndex, expenses]);
+
   return (
     <Container component="main" sx={{ mt: 8, mb: 2 }} maxWidth="sm">
       {friend ? (
@@ -226,22 +251,24 @@ export function Friend() {
           {showInvolved
             ? expenses
                 .filter((e) => e.involved)
-                .map((expense) => (
+                .map((expense, i) => (
                   <ExpenseListItem
                     key={expense.description + expense.date}
                     expense={expense}
                     selectExpense={() => {
                       setSelectedExpense(expense);
+                      setSelectedExpenseIndex(i);
                     }}
                     toshlExists={checkIfExpenseExistsOnToshl(expense)}
                   />
                 ))
-            : expenses.map((expense) => (
+            : expenses.map((expense, i) => (
                 <ExpenseListItem
                   key={expense.description + expense.date}
                   expense={expense}
                   selectExpense={() => {
                     setSelectedExpense(expense);
+                    setSelectedExpenseIndex(i);
                   }}
                   toshlExists={checkIfExpenseExistsOnToshl(expense)}
                 />
@@ -279,12 +306,21 @@ export function Friend() {
         </Typography>
       )}
       <Modal open={!!selectedExpense}>
-        <AddExpenseForm2
+        <AddExpenseForm
           expense={selectedExpense}
           toshlExists={checkIfExpenseExistsOnToshl(selectedExpense)}
           closeModal={() => {
             setSelectedExpense(null);
           }}
+          previousExpense={previousExpense}
+          nextExpense={nextExpense}
+          hasNext={
+            selectedExpenseIndex !== null &&
+            selectedExpenseIndex < expenses.length - 1
+          }
+          hasPrevious={
+            selectedExpenseIndex !== null && selectedExpenseIndex > 0
+          }
         />
       </Modal>
     </Container>
