@@ -14,6 +14,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import { useUserAccounts } from "../hooks/useAccounts";
 import { Expense } from "./ExpenseListItem";
+import { set } from "date-fns";
 
 const modalStyle = {
   position: "absolute",
@@ -51,7 +52,7 @@ export function AddExpenseForm({
 
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-
+  const [addingExpense, setAddingExpense] = useState(false);
   // useEffect(() => {
   //   console.log("Adding event listener");
   //   window.addEventListener("keydown", (e) => {
@@ -82,6 +83,7 @@ export function AddExpenseForm({
       alert("Error: No expense selected");
       return;
     }
+    setAddingExpense(true);
     const data = {
       amount: -Math.abs(expense.share_amount),
       currency: { code: expense.currency },
@@ -105,6 +107,7 @@ export function AddExpenseForm({
         body: JSON.stringify(data),
       });
       if (res.ok) {
+        setAddingExpense(false);
         nextExpense();
       } else {
         alert("Error adding expense to Toshl");
@@ -113,6 +116,7 @@ export function AddExpenseForm({
       console.error(e);
       alert("Error adding expense to Toshl");
     }
+    setAddingExpense(false);
   };
 
   const categoryOptions = useMemo(
@@ -276,7 +280,7 @@ export function AddExpenseForm({
               }}></Box>
           )}
           <Button
-            disabled={!hasPrevious}
+            disabled={!hasPrevious || addingExpense}
             size="large"
             variant="contained"
             color="secondary"
@@ -290,7 +294,7 @@ export function AddExpenseForm({
             Prev
           </Button>
           <Button
-            disabled={!hasNext}
+            disabled={!hasNext || addingExpense}
             size="large"
             variant="contained"
             color="secondary"
@@ -304,7 +308,7 @@ export function AddExpenseForm({
             Next
           </Button>
           <Button
-            disabled={!selectedCategory}
+            disabled={!selectedCategory || addingExpense}
             size="large"
             variant="contained"
             color="primary"
@@ -315,7 +319,7 @@ export function AddExpenseForm({
             onClick={() => {
               addExpenseToToshl();
             }}>
-            Add
+            {addingExpense ? "Adding..." : "Add"}
           </Button>
         </Stack>
       </Stack>
