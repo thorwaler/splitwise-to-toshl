@@ -3,3 +3,4 @@ config.cfg
 *.csv
 
 .DS_Store
+*.tar

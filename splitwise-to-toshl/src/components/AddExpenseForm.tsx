@@ -8,13 +8,12 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 import CloseIcon from "@mui/icons-material/Close";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import { useUserAccounts } from "../hooks/useAccounts";
 import { Expense } from "./ExpenseListItem";
-import { set } from "date-fns";
 
 const modalStyle = {
   position: "absolute",
@@ -220,7 +219,7 @@ export function AddExpenseForm({
           getOptionLabel={(option) => option.label}
           options={categoryOptions}
           sx={{ width: "100%" }}
-          onChange={(e, value) => {
+          onChange={(_, value) => {
             setSelectedCategory(value?.id);
           }}
           tabIndex={0}
@@ -233,8 +232,7 @@ export function AddExpenseForm({
           options={tagOptions}
           getOptionLabel={(option) => option.label}
           isOptionEqualToValue={(option, value) => option.id === value.id}
-          onChange={(e, value) => {
-            console.log(value);
+          onChange={(_, value) => {
             setSelectedTags(value.map((v) => v.id));
           }}
           tabIndex={1}
