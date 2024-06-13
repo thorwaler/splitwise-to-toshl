@@ -10,6 +10,24 @@ Vite + React + TypeScript + TailwindCSS
 
 Requires Node 20.0.0 or higher.
 
+# Environments
+
+## Development
+
+Runs a vite server on port 5554, and an express server on 5544 which acts as a proxy for the toshl and splitwise APIs.
+
+The vite dev server on 5554 has a proxy to port 5544 which allows the frontend to make requests to the backend on the same port.
+
+## Production
+
+After building the frontend, the express server will serve both the proxy and the frontend on port 5544.
+
+This will then be copied into a docker container and deployed on the digital ocean server.
+
+# Global requirements
+
+Docker
+
 # Development
 
 Install dependencies
@@ -31,6 +49,10 @@ yarn dev:server
 ```
 
 # Docker Deployment
+
+Build the frontend
+
+`yarn build`
 
 Build the docker file
 
