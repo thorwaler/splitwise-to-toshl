@@ -57,13 +57,13 @@ Build the frontend
 Build the docker file
 
 ```
-# Note: If running on an arm64 machine, you need to build using the buildx command.
+# Note: If running on an arm64 machine targetting a x86 machine, you need to build using the buildx command.
 
 docker buildx create --name mybuilder --platform linux/amd64
 docker buildx use mybuilder
 docker buildx build --platform linux/amd64 -t splitwise-to-toshl .
 
-# Otherwise the normal build command will work
+# Otherwise the normal build command will work if you want to run it on your local machine or a server with the same architecture.
 
 docker build -t splitwise-to-toshl .
 ```
