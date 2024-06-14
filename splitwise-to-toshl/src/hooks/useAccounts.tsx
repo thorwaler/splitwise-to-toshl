@@ -97,9 +97,7 @@ export const UserAccountsProvider: React.FC<{ children: React.ReactNode }> = ({
     localStorage.getItem("selectedTag") || ""
   );
 
-  const accountsSet = useMemo(() => {
-    return userAccounts.splitwise.id !== 0 && userAccounts.toshl.id !== 0;
-  }, [userAccounts]);
+  const [accountsSet, setAccountsSet] = useState<boolean>(false);
 
   const loadUserAccounts = useCallback(async (): Promise<boolean> => {
     const splitwiseAPIKey = localStorage.getItem("splitwiseAPIKey");
@@ -149,6 +147,17 @@ export const UserAccountsProvider: React.FC<{ children: React.ReactNode }> = ({
             fetchToshlTags,
           ]);
 
+        // Check if these are valid
+        if (
+          !splitwiseUser?.user?.id ||
+          !splitwiseUser?.user?.email ||
+          !toshlUser?.id ||
+          !toshlUser?.email
+        ) {
+          setLoadingAccounts(false);
+          return false;
+        }
+
         setUserAccounts((prev) => ({
           ...prev,
           splitwise: {
@@ -194,6 +203,7 @@ export const UserAccountsProvider: React.FC<{ children: React.ReactNode }> = ({
       }
 
       setLoadingAccounts(false);
+      setAccountsSet(true);
       return true;
     }
     return false;

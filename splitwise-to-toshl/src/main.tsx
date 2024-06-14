@@ -9,7 +9,7 @@ import CssBaseline from "@mui/material/CssBaseline";
 import Box from "@mui/material/Box";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { ThemeProvider } from "@emotion/react";
-import { createTheme, Stack } from "@mui/material";
+import { AppBar, createTheme, Stack } from "@mui/material";
 import { Copyright } from "./Copyright.tsx";
 import { Settings } from "./Settings.tsx";
 import { Friends } from "./Friends.tsx";
@@ -47,10 +47,46 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
       <UserAccountsProvider>
         <Stack
           sx={{
+            margin: "0 auto",
+            textAlign: "center",
             minHeight: "100vh",
           }}>
           <CssBaseline />
 
+          <AppBar position="static">
+            <Stack
+              direction="row"
+              justifyContent="center"
+              alignItems="center"
+              spacing={2}>
+              <Stack
+                sx={{
+                  width: "100%",
+                  maxWidth: "960px",
+                  padding: "1rem 1rem",
+                }}
+                direction="row"
+                justifyContent="space-between"
+                alignItems="center"
+                spacing={2}>
+                <Typography variant="h6" component="div">
+                  <a
+                    href="/"
+                    style={{ textDecoration: "none", color: "inherit" }}>
+                    Splitwise to Toshl
+                  </a>
+                </Typography>
+
+                <Typography variant="h6" component="div">
+                  <a
+                    href="/settings"
+                    style={{ textDecoration: "none", color: "inherit" }}>
+                    Settings
+                  </a>
+                </Typography>
+              </Stack>
+            </Stack>
+          </AppBar>
           <RouterProvider router={router} />
 
           <Box
@@ -65,9 +101,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
                   : theme.palette.grey[800],
             }}>
             <Container maxWidth="sm">
-              <Typography variant="body1">
-                Welcome to Splitwise to Toshl
-              </Typography>
+              <Typography variant="body1">Hello, I am a footer</Typography>
               <Copyright />
             </Container>
           </Box>

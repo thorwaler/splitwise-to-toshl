@@ -1,5 +1,3 @@
-import "./App.css";
-
 import Typography from "@mui/material/Typography";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -22,9 +20,6 @@ function Home() {
   } = useUserAccounts();
 
   useEffect(() => {
-    // if (!splitwiseAPIKey || !toshlAPIKey) {
-    //   navigate("/settings");
-    // }
     if (!accountsSet) {
       console.log("Accounts not set");
       loadUserAccounts();
@@ -50,6 +45,10 @@ function Home() {
       </Typography>
       <Typography variant="body1" component="p" gutterBottom>
         This tool is open source. You can view the code{" "}
+        <a href="https://github.com/cjx3711/splitwise-to-toshl" target="_blank">
+          here
+        </a>
+        .
       </Typography>
 
       <Box sx={{ mt: 5 }}>
