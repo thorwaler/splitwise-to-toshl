@@ -2,7 +2,7 @@ import Typography from "@mui/material/Typography";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Box, Button, CircularProgress, Container } from "@mui/material";
-import { useUserAccounts } from "./hooks/useAccounts";
+import { AccountState, useUserAccounts } from "./hooks/useAccounts";
 
 function Home() {
   const splitwiseAPIKey = localStorage.getItem("splitwiseAPIKey");
@@ -12,21 +12,20 @@ function Home() {
   const {
     userAccounts,
     loadUserAccounts,
-    accountsSet,
-    loadingAccounts,
+    accountState,
     totalCategories,
     totalTags,
     selectedTag,
   } = useUserAccounts();
 
   useEffect(() => {
-    if (!accountsSet) {
-      console.log("Accounts not set");
+    if (
+      accountState !== AccountState.SET &&
+      accountState !== AccountState.INVALID
+    ) {
       loadUserAccounts();
-    } else {
-      console.log("Accounts set");
     }
-  }, [accountsSet, loadUserAccounts, navigate, splitwiseAPIKey, toshlAPIKey]);
+  }, [accountState, loadUserAccounts, navigate, splitwiseAPIKey, toshlAPIKey]);
 
   return (
     <Container component="main" sx={{ mt: 8, mb: 2 }} maxWidth="sm">
@@ -52,12 +51,17 @@ function Home() {
       </Typography>
 
       <Box sx={{ mt: 5 }}>
-        {loadingAccounts ? (
+        {accountState === AccountState.INVALID && (
+          <Typography variant="body1" component="div" gutterBottom color="red">
+            <div>Invalid API Keys, please set them again</div>
+          </Typography>
+        )}
+        {accountState === AccountState.LOADING ? (
           <Box>
             <CircularProgress />
             <Typography>Loading Accounts...</Typography>
           </Box>
-        ) : accountsSet ? (
+        ) : accountState === AccountState.SET ? (
           <Button
             variant="contained"
             color="primary"
@@ -78,7 +82,7 @@ function Home() {
         )}
       </Box>
 
-      {accountsSet && (
+      {accountState === AccountState.SET && (
         <Box sx={{ mt: 5 }}>
           <Typography variant="body1" component="div" gutterBottom>
             <div>Accounts:</div>

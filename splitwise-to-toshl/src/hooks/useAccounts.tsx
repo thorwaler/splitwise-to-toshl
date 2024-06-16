@@ -57,10 +57,16 @@ export type ToshlExpense = {
   };
 };
 
+export enum AccountState {
+  UNSET,
+  LOADING,
+  SET,
+  INVALID,
+}
+
 type UserAccountsContextType = {
   userAccounts: UserAccounts;
-  accountsSet: boolean;
-  loadingAccounts: boolean;
+  accountState: AccountState;
   loadUserAccounts: () => Promise<boolean>;
   setSelectedTag(id: string): void;
   selectedTag: ToshlTag | undefined;
@@ -79,7 +85,6 @@ const UserAccountsContext = createContext<UserAccountsContextType | undefined>(
 export const UserAccountsProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [loadingAccounts, setLoadingAccounts] = useState<boolean>(false);
   const [userAccounts, setUserAccounts] = useState<UserAccounts>({
     splitwise: {
       id: 0,
@@ -97,14 +102,16 @@ export const UserAccountsProvider: React.FC<{ children: React.ReactNode }> = ({
     localStorage.getItem("selectedTag") || ""
   );
 
-  const [accountsSet, setAccountsSet] = useState<boolean>(false);
+  const [accountState, setAccountState] = useState<AccountState>(
+    AccountState.UNSET
+  );
 
   const loadUserAccounts = useCallback(async (): Promise<boolean> => {
     const splitwiseAPIKey = localStorage.getItem("splitwiseAPIKey");
     const toshlAPIKey = localStorage.getItem("toshlAPIKey");
 
     if (splitwiseAPIKey && toshlAPIKey) {
-      setLoadingAccounts(true);
+      setAccountState(AccountState.LOADING);
 
       const fetchSplitwiseUser = fetch(`/api/splitwise/v3.0/get_current_user`, {
         method: "GET",
@@ -154,7 +161,7 @@ export const UserAccountsProvider: React.FC<{ children: React.ReactNode }> = ({
           !toshlUser?.id ||
           !toshlUser?.email
         ) {
-          setLoadingAccounts(false);
+          setAccountState(AccountState.INVALID);
           return false;
         }
 
@@ -198,12 +205,11 @@ export const UserAccountsProvider: React.FC<{ children: React.ReactNode }> = ({
         setTags(filteredTags);
       } catch (e) {
         console.error(e);
-        setLoadingAccounts(false);
+        setAccountState(AccountState.INVALID);
         return false;
       }
 
-      setLoadingAccounts(false);
-      setAccountsSet(true);
+      setAccountState(AccountState.SET);
       return true;
     }
     return false;
@@ -249,8 +255,7 @@ export const UserAccountsProvider: React.FC<{ children: React.ReactNode }> = ({
   const value = {
     userAccounts,
     loadUserAccounts,
-    accountsSet,
-    loadingAccounts,
+    accountState,
     totalTags,
     totalCategories,
     categories: cats,
