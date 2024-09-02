@@ -27,7 +27,7 @@ app.use(
 
 // Catch-all route handler (used for production, when the static site is compiled)
 // Not used in dev, in dev the api is served via a proxy in the vite config
-app.use(serveStatic("./dist", { index: ["index.html"] }));
+app.use(serveStatic("./dist/splitwise-to-toshl", { index: ["index.html"] }));
 app.get("*", (req, res) => {
   res.sendFile(resolve(__dirname, "dist", "index.html"));
 });
